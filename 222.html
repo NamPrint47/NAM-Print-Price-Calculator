@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAM PRINT - คำนวณราคาปริ้น</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #D0C9B5;
+            color: #7f423d;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #7f423d;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #7f423d;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #5f322d;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .bunny {
+            display: block;
+            margin: 20px auto;
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NAM PRINT</h1>
+        <img src="https://example.com/cute-bunny.png" alt="Cute Bunny" class="bunny">
+        <form id="printForm">
+            <label for="pages">จำนวนหน้า:</label>
+            <input type="number" id="pages" name="pages" min="1" required>
+
+            <label for="paperWeight">ความหนากระดาษ:</label>
+            <select id="paperWeight" name="paperWeight">
+                <option value="70">70 แกรม</option>
+                <option value="100">100 แกรม</option>
+            </select>
+
+            <label for="color">สี/ขาวดำ:</label>
+            <select id="color" name="color">
+                <option value="blackWhite">ขาวดำ</option>
+                <option value="color">สี</option>
+            </select>
+
+            <label for="printType">รูปแบบการปริ้น:</label>
+            <select id="printType" name="printType">
+                <option value="single">หน้าเดียว</option>
+                <option value="double">หน้าหลัง</option>
+            </select>
+
+            <label for="binding">รูปแบบการเข้าเล่ม:</label>
+            <select id="binding" name="binding">
+                <option value="spiral">สันเกลียว</option>
+                <option value="lacine">แลคซีน</option>
+                <option value="staple">เย็บมุม</option>
+                <option value="none">ปริ้นเฉยๆ</option>
+            </select>
+
+            <button type="button" onclick="calculatePrice()">คำนวณราคา</button>
+
+            <div id="result" class="result"></div>
+        </form>
+    </div>
+
+    <script>
+        function calculatePrice() {
+            const pages = parseInt(document.getElementById('pages').value);
+            const paperWeight = document.getElementById('paperWeight').value;
+            const color = document.getElementById('color').value;
+            const printType = document.getElementById('printType').value;
+            const binding = document.getElementById('binding').value;
+
+            let sheetCount = printType === 'double' ? Math.ceil(pages / 2) : pages;
+            let printPrice = 0;
+
+            if (paperWeight === '70') {
+                if (color === 'blackWhite') {
+                    printPrice = pages * (printType === 'double' ? 0.5 : 0.5);
+                } else {
+                    printPrice = printType === 'double' ? (pages / 2) * 1.4 : pages * 0.75;
+                }
+            } else if (paperWeight === '100') {
+                if (color === 'blackWhite') {
+                    printPrice = printType === 'double' ? (pages / 2) * 1.3 : pages * 0.7;
+                } else {
+                    printPrice = pages; // Special case for 100 แกรม สี
+                }
+            }
+
+            let bindingPrice = 0;
+            let error = '';
+
+            if (binding === 'spiral') {
+                if (sheetCount > 500) {
+                    error = 'จำนวนเกิน 500 แผ่น ไม่สามารถเข้าเล่มได้';
+                } else {
+                    if (sheetCount <= 75) bindingPrice = 25;
+                    else if (sheetCount <= 130) bindingPrice = 30;
+                    else if (sheetCount <= 190) bindingPrice = 40;
+                    else if (sheetCount <= 230) bindingPrice = 50;
+                    else if (sheetCount <= 270) bindingPrice = 60;
+                    else if (sheetCount <= 300) bindingPrice = 70;
+                    else if (sheetCount <= 350) bindingPrice = 80;
+                    else if (sheetCount <= 400) bindingPrice = 90;
+                    else bindingPrice = 115;
+                }
+            } else if (binding === 'lacine' || binding === 'staple') {
+                if (sheetCount > 80) {
+                    error = 'จำนวนเกิน 80 แผ่นไม่สามารถเข้าเล่มแลคซีนหรือเย็บมุมได้';
+                } else {
+                    bindingPrice = 8;
+                }
+            }
+
+            const totalPrice = printPrice + bindingPrice;
+            const resultDiv = document.getElementById('result');
+
+            if (error) {
+                resultDiv.innerHTML = `<p class="error">${error}</p>`;
+            } else {
+                resultDiv.innerHTML = `<p>ราคาปริ้น: ${printPrice.toFixed(2)} บาท</p>` +
+                                      `<p>ราคาการเข้าเล่ม: ${bindingPrice} บาท</p>` +
+                                      `<p>ราคาสุทธิ: ${totalPrice.toFixed(2)} บาท</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
